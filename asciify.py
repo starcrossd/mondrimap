@@ -8,7 +8,7 @@ pathparts = imgpath.split("/")
 imgname = pathparts[-1]
 
 nameparts = imgname.split(".")
-imgname = nameparts[1]
+imgname = nameparts[0]
 
 
 img = Image.open(imgpath)
@@ -29,5 +29,8 @@ pixelcount = len(characters)
 
 asciiimage = "\n".join([characters[i:(i+newwidth)] for i in range(0,pixelcount,newwidth)])
 
+print(asciiimage)
+print(f"Height : {H}, Width : {W}")
 with open(f"{imgname}output.txt", "w") as f:
     f.write(asciiimage)
+    print(f"ascii saved as {imgname}output.txt")
