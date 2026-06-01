@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from PIL import Image
 import math
 import os
@@ -35,7 +36,7 @@ parser = argparse.ArgumentParser(prog='asciify', description='converts images in
 parser.add_argument('-c', '--colour',action='store_true', help='Makes the resulting ascii colourful')
 parser.add_argument('-i', '--invert',action='store_true', help='Inverts the character set used')
 
-imgpath = input("Please provide a path for the image you wanna ascii-ify; ")
+imgpath = input("Please provide a path for the image you want to abstract; ")
 pathparts = imgpath.split("/")
 imgname = pathparts[-1]
 
