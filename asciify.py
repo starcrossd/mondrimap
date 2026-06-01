@@ -1,7 +1,14 @@
 from PIL import Image
 import math
+import os
+import argparse
 
-ASCII_CHARS = ["@","#","$","%","?","*","+",";",":",",","."]
+
+BASEPATH = os.path.dirname(__file__)
+
+ASCIICHARS = ["@","#","$","%","?","*","+",";",":",",","."]
+FLIIPPEDCHARSET = ASCIICHARS[::-1]
+
 RESET = '\033[0m'
 COLOURS = {
     'black':'\033[30m',
@@ -23,6 +30,10 @@ COLOURRGB = {
     'cyan':(0,255,255),
     'white':(255,255,255)
 }
+
+parser = argparse.ArgumentParser(prog='asciify', description='converts images into ascii art')
+parser.add_argument('-c', '--colour',action='store_true', help='Makes the resulting ascii colourful')
+parser.add_argument('-i', '--invert',action='store_true', help='Inverts the character set used')
 
 imgpath = input("Please provide a path for the image you wanna ascii-ify; ")
 pathparts = imgpath.split("/")
@@ -49,30 +60,49 @@ pixels = list(greyscaleimg.get_flattened_data())
 
 
 characters = []
-ansicode = RESET
-for i, pixel in enumerate(pixels):
-    colourrange = float('inf')
-    char = ASCII_CHARS[int(pixel)//25]
+def colourimg(pixels, pixelcolours, charset):
+    ansicode = RESET
+    for i, pixel in enumerate(pixels):
+        colourrange = float('inf')
+        char = charset[int(pixel)//25]
 
-    cvalues = pixelcolours[i]
-    for colour, rgb in COLOURRGB.items():
-        cr, cg, cb = rgb
-        distance =  math.sqrt((cvalues[0]-cr)**2 + (cvalues[1]-cg)**2 + (cvalues[2]-cb)**2)
-        if distance < colourrange:
-            colourrange = distance
-            ansicode = COLOURS[colour]
-
-
-    char = f"{ansicode}{char}{RESET}"
-    characters.append(char)
+        cvalues = pixelcolours[i]
+        for colour, rgb in COLOURRGB.items():
+            cr, cg, cb = rgb
+            distance =  math.sqrt((cvalues[0]-cr)**2 + (cvalues[1]-cg)**2 + (cvalues[2]-cb)**2)
+            if distance < colourrange:
+                colourrange = distance
+                ansicode = COLOURS[colour]
 
 
-pixelcount = len(characters)
+        char = f"{ansicode}{char}{RESET}"
+        characters.append(char)
+    return characters
 
-asciiimage = "\n".join(["".join(characters[i:i+newwidth]) for i in range(0, pixelcount, newwidth)])
+def blackandwhiteimg(pixels, charset):
+    for pixel in pixels:
+        characters.append(charset[int(pixel)//25])
+    return characters
 
-print(asciiimage)
-print(f"Height : {H}, Width : {W}")
-with open(f"{imgname}output.txt", "w") as f:
-    f.write(asciiimage)
-    print(f"ascii saved as {imgname}output.txt")
+def formatchars(characters, newwidth):
+    pixelcount = len(characters)
+
+    asciiimage = "\n".join(["".join(characters[i:i+newwidth]) for i in range(0, pixelcount, newwidth)])
+
+    print(asciiimage)
+    print(f"Height : {H}, Width : {W}")
+
+    fname = f"{imgname}output.txt"
+    with open(os.path.join(BASEPATH, fname),"w") as f:
+        f.write(asciiimage)
+        print(f"ascii saved as {imgname}output.txt")
+
+args = parser.parse_args()
+charset = FLIIPPEDCHARSET if args.invert else ASCIICHARS
+
+if args.colour:
+    characters = colourimg(pixels, pixelcolours, charset)
+else:
+    characters = blackandwhiteimg(pixels, charset)
+
+formatchars(characters, newwidth)
