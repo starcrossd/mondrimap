@@ -32,24 +32,32 @@ COLOURRGB = {
     'white':(255,255,255)
 }
 
-parser = argparse.ArgumentParser(prog='asciify', description='converts images into ascii art')
+parser = argparse.ArgumentParser(prog='mondrimap', description='converts images into ascii art')
+
+parser.add_argument('-img', '--img', default='none', help='File for the image, optional flag as file can be added even if not used')
 parser.add_argument('-c', '--colour',action='store_true', help='Makes the resulting ascii colourful')
 parser.add_argument('-i', '--invert',action='store_true', help='Inverts the character set used')
+parser.add_argument('-o', '--output', help='change the output path for your new image')
+parser.add_argument('-w', '--width', help='specify the width of the image from the command')
 
-imgpath = input("Please provide a path for the image you want to abstract; ")
+args = parser.parse_args()
+
+imgpath = args.img or input("Please provide a path for the image you want to abstract; ")
+
 pathparts = imgpath.split("/")
 imgname = pathparts[-1]
 
 nameparts = imgname.split(".")
 imgname = nameparts[0]
 
+outpath = args.output or os.path.join(BASEPATH,f'{imgname}.output.txt')
 
 img = Image.open(imgpath)
-W,H = img.size[0], img.size[1]
+W,H = img.size
 ratio = H/W / 3
 
 print(f"the ratio of height to width is {ratio},")
-newwidth = int(input("How wide do you want the ascii version of the image to be: "))
+newwidth = int(args.width) or  int(input("How wide do you want the ascii version of the image to be: "))
 
 newheight = math.floor(newwidth * ratio)
 
@@ -91,19 +99,17 @@ def formatchars(characters, newwidth):
     asciiimage = "\n".join(["".join(characters[i:i+newwidth]) for i in range(0, pixelcount, newwidth)])
 
     print(asciiimage)
-    print(f"Height : {H}, Width : {W}")
-
-    fname = f"{imgname}output.txt"
-    with open(os.path.join(BASEPATH, fname),"w") as f:
+    with open(outpath,"w") as f:
         f.write(asciiimage)
         print(f"ascii saved as {imgname}output.txt")
 
-args = parser.parse_args()
 charset = FLIIPPEDCHARSET if args.invert else ASCIICHARS
-
 if args.colour:
     characters = colourimg(pixels, pixelcolours, charset)
 else:
     characters = blackandwhiteimg(pixels, charset)
 
 formatchars(characters, newwidth)
+
+
+# future plans : gif support, background removal, truecolour, custom charsets

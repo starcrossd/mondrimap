@@ -11,13 +11,17 @@ source /etc/os-release
 
 command -v python3 || { echo "python3 not found, please install it."; exit 1; }
 
+python3 -c "import PIL" 2>/dev/null && echo "pillow is installed." || { ISPILLOWINSTALLED=0; echo "pillow needs installation"; }
+
 echo "Enter password to confrim the installation for the pillow python library"
-if [[ $ID == "arch" ]]; then
-    sudo pacman -S python-pillow
-elif [[ $ID == "ubuntu" || $ID == "debian" ]]; then
-    sudo apt install python3-pil -y
-else
-    python3 -m pip install pillow --break-system-packages
+if [[ $ISPILLOWINSTALLED == 0 ]]; then
+    if [[ $ID == "arch" ]]; then
+        sudo pacman -S python-pillow
+    elif [[ $ID == "ubuntu" || $ID == "debian" ]]; then
+        sudo apt install python3-pil -y
+    else
+        python3 -m pip install pillow --break-system-packages
+    fi
 fi
 
 if [[ $SHELLTYPE == *bash* ]]; then
