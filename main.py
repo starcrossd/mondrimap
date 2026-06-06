@@ -8,7 +8,6 @@ import argparse
 BASEPATH = os.path.dirname(__file__)
 
 ASCIICHARS = ["@","#","$","%","?","*","+",";",":",",","."]
-FLIIPPEDCHARSET = ASCIICHARS[::-1]
 
 RESET = '\033[0m'
 COLOURS = {
@@ -34,11 +33,13 @@ COLOURRGB = {
 
 parser = argparse.ArgumentParser(prog='mondrimap', description='converts images into ascii art')
 
-parser.add_argument('-img', '--img', default='none', help='File for the image, optional flag as file can be added even if not used')
-parser.add_argument('-c', '--colour',action='store_true', help='Makes the resulting ascii colourful')
+parser.add_argument('-img', '--img', default=None, help='File for the image, optional flag as file can be added even if not used')
+parser.add_argument('-c', '--colour',action='store_true', help='Makes the resulting ascii colourful, using classic ansi escape codes')
 parser.add_argument('-i', '--invert',action='store_true', help='Inverts the character set used')
 parser.add_argument('-o', '--output', help='change the output path for your new image')
 parser.add_argument('-w', '--width', help='specify the width of the image from the command')
+parser.add_argument('-tc', '--truecolour',action='store_true', help='Much wider range of colours that can be displayed by terminal')
+parser.add_argument('-s', '--save', action='store_true', help='Option to save file to prevent unecessary files being made')
 
 args = parser.parse_args()
 
@@ -50,7 +51,7 @@ imgname = pathparts[-1]
 nameparts = imgname.split(".")
 imgname = nameparts[0]
 
-outpath = args.output or os.path.join(BASEPATH,f'{imgname}.output.txt')
+outpath = args.output or os.path.join(BASEPATH,f'{imgname}-output.txt')
 
 img = Image.open(imgpath)
 W,H = img.size
@@ -88,6 +89,18 @@ def colourimg(pixels, pixelcolours, charset):
         characters.append(char)
     return characters
 
+def truecolourimg(pixels, pixelcolours, charset):
+    for i, pixel in enumerate(pixels):
+        char = charset[int(pixel)//25]
+
+        cvalues = pixelcolours[i]
+
+        truecolouransicode = f"\x1b[38;2;{cvalues[0]};{cvalues[1]};{cvalues[2]}m"
+
+        char = f"{truecolouransicode}{char}{RESET}"
+        characters.append(char)
+    return characters
+
 def blackandwhiteimg(pixels, charset):
     for pixel in pixels:
         characters.append(charset[int(pixel)//25])
@@ -98,18 +111,26 @@ def formatchars(characters, newwidth):
 
     asciiimage = "\n".join(["".join(characters[i:i+newwidth]) for i in range(0, pixelcount, newwidth)])
 
+    return asciiimage
+
+def saveascii(asciiimage):
     print(asciiimage)
     with open(outpath,"w") as f:
         f.write(asciiimage)
         print(f"ascii saved as {imgname}output.txt")
 
-charset = FLIIPPEDCHARSET if args.invert else ASCIICHARS
+charset = ASCIICHARS[::-1] if args.invert else ASCIICHARS
 if args.colour:
     characters = colourimg(pixels, pixelcolours, charset)
+elif args.truecolour:
+    characters = truecolourimg(pixels, pixelcolours,charset)
 else:
     characters = blackandwhiteimg(pixels, charset)
 
-formatchars(characters, newwidth)
+print(formatchars(characters, newwidth))
 
+if args.save:
+    saveascii(formatchars(characters, newwidth))
 
-# future plans : gif support, background removal, truecolour, custom charsets
+# future plans : gif support, background removal, custom charsets
+# highlight mode? highlighting specific colours in the img

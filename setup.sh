@@ -13,8 +13,8 @@ command -v python3 || { echo "python3 not found, please install it."; exit 1; }
 
 python3 -c "import PIL" 2>/dev/null && echo "pillow is installed." || { ISPILLOWINSTALLED=0; echo "pillow needs installation"; }
 
-echo "Enter password to confrim the installation for the pillow python library"
 if [[ $ISPILLOWINSTALLED == 0 ]]; then
+    echo "Enter password to confrim the installation for the pillow python library"
     if [[ $ID == "arch" ]]; then
         sudo pacman -S python-pillow
     elif [[ $ID == "ubuntu" || $ID == "debian" ]]; then
@@ -30,10 +30,15 @@ else
     ALIASADDPATH="$HOME/.zshrc"
 fi
 
+read -p "Would you like to keep the 'imgs/' folder in the repository as example screenshots? [y/n]: " KEEPIMGS
+if [[ ${KEEPIMGS,,} == "n" ]]; then
+    rm -rf imgs/
+fi
+
 echo "#made by setup.sh for mondrimap" >> $ALIASADDPATH
 echo "alias mondrimap='$COMMANDSTR'" >> $ALIASADDPATH
 
 source $ALIASADDPATH
 
-echo "The setup file will now delte itself, thank you for installinf mondrimap"
+echo "The setup file will now delete itself, thank you for installing mondrimap"
 (sleep 1 && rm -- "$0") &

@@ -4,9 +4,13 @@
 
 Converts images to ASCII art in your terminal. Built to mess around with PIL and terminal escape codes. Supports colour output and an inverted charset for light backgrounds.
 
-| | |
+| Black and White | Ansi Colours |
 |---|---|
-| ![demo - ryu](imgs/ryu.png) | ![demo - purplehaze](imgs/purplehaze.png) |
+| ![demo - ryu black and white ](imgs/ryu.png) | ![demo - purplehaze base ansi colour](imgs/purplehaze.png) |
+
+| Truecolour|
+|----|
+| ![demo - moodyblues trucolour](imgs/moodyblues.png) |
 
 ## Install
 
@@ -41,6 +45,8 @@ You'll be asked for an image path and output width. The ASCII output is printed 
 | `-o path/to/out.txt` | Custom output path |
 | `-c` | Colour output |
 | `-i` | Invert charset (for light backgrounds) |
+| '-tc' | Truecolour output |
+| '-s' | Save the output to a file |
 
 ```bash
 # example — everything at once
