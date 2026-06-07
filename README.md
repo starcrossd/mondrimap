@@ -7,13 +7,10 @@ Converts images to ASCII art in your terminal. Built to mess around with PIL and
 |---|---|
 | ![demo - moodyblues trucolour](imgs/moodyblues.png)  | ![demo - purplehaze base ansi colour](imgs/purplehaze.png) |
 
-| Black and White |
+| Black and White | Gifs |
 |----|
-| ![demo - ryu black and white ](imgs/ryu.png) |
+| ![demo - ryu black and white ](imgs/ryu.png) | ![demo - donut gif](imgs/donut.gif) |
 
-| Gifs |
-|-|
-| ![demo - donut gif](imgs/donut.gif) |
 
 ## Install
 ```bash
