@@ -4,6 +4,7 @@ PYFILE="$SCRIPTDIR/main.py"
 
 SHELLTYPE=$SHELL
 ALIASADDPATH=""
+CHARSET="@#$%?*+;:,."
 
 COMMANDSTR="python3 $PYFILE"
 
@@ -33,6 +34,16 @@ fi
 read -p "Would you like to keep the 'imgs/' folder in the repository as example screenshots? [y/n]: " KEEPIMGS
 if [[ ${KEEPIMGS,,} == "n" ]]; then
     rm -rf imgs/
+fi
+
+echo "This is the default character set for the ascii images produced:"
+echo $CHARSET
+read -p "Would you like to use the default character set? (recommended) [y/n]: " KEEPCHARS
+if [[ ${KEEPCHARS,,} == "y" ]]; then
+    echo $CHARSET > $SCRIPTDIR/"charset.txt"
+else
+    read -p "What set of characters would you like to use? (it can later be changed in ${SCRIPTDIR}/.charset.txt)" CHARSET
+    echo $CHARSET > $SCRIPTDIR/"charset.txt"
 fi
 
 echo "#made by setup.sh for mondrimap" >> $ALIASADDPATH
