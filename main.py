@@ -4,6 +4,7 @@ import math
 import os
 import argparse
 import time
+import subprocess
 
 BASEPATH = os.path.dirname(__file__)
 
@@ -46,7 +47,7 @@ def colourimg(pixels, pixelcolours, charset):
                 ansicode = COLOURS[colour]
 
 
-        char = f"{ansicode}{char}{RESET}"
+        char = f"{ansicode}{char}{RESET}" if not args.background else f"\033[{40 + list(COLOURS.keys()).index(colour)}m{ansicode}{char}{RESET}"
         characters.append(char)
     return characters
 
@@ -58,7 +59,7 @@ def truecolourimg(pixels, pixelcolours, charset):
 
         truecolouransicode = f"\x1b[38;2;{cvalues[0]};{cvalues[1]};{cvalues[2]}m"
 
-        char = f"{truecolouransicode}{char}{RESET}"
+        char = f"{truecolouransicode}{char}{RESET}"  if not args.background else f"\x1b[48;2;{cvalues[0]};{cvalues[1]};{cvalues[2]}m{truecolouransicode}{char}{RESET}"
         characters.append(char)
     return characters
 
@@ -79,7 +80,7 @@ def splitgif(input_path):
 def formatchars(characters, newwidth):
     pixelcount = len(characters)
 
-    asciiimage = "\n".join(["".join(characters[i:i+newwidth]) for i in range(0, pixelcount, newwidth)])
+    asciiimage = "\n".join(["".join(characters[i:i+newwidth]) + RESET for i in range(0, pixelcount, newwidth)])
 
     return asciiimage
 
@@ -89,7 +90,7 @@ def saveascii(asciiimage):
         f.write(asciiimage)
         print(f"ascii saved as {imgname}output.txt")
 
-parser = argparse.ArgumentParser(prog='mondrimap', description='converts images into ascii art')
+parser = argparse.ArgumentParser(prog='mondrimap', description='Converts images or gifs into ascii art\nThere are a lot of options to play around with but you dont need to use them all')
 
 parser.add_argument('-img', '--img', default=None, help='File for the image, optional flag as file can be added even if not used')
 parser.add_argument('-c', '--colour',action='store_true', help='Makes the resulting ascii colourful, using classic ansi escape codes')
@@ -99,12 +100,12 @@ parser.add_argument('-w', '--width', help='specify the width of the image from t
 parser.add_argument('-tc', '--truecolour',action='store_true', help='Much wider range of colours that can be displayed by terminal')
 parser.add_argument('-s', '--save', action='store_true', help='Option to save file to prevent unecessary files being made')
 parser.add_argument('-gif', '--gif', default=None, help='Allows you to use a gif rather than an image to convert')
+parser.add_argument('-bg', '--background', action='store_true', help='Toggles the use of background colours to make the characters into full pixels')
+parser.add_argument('-fps', '--frames', default=None, help='Allows you to set a custom fps')
 
 args = parser.parse_args()
 
 if args.gif:
-    characters = []
-
     gifpath = args.gif
 
     pathparts = gifpath.split("/")
@@ -116,10 +117,15 @@ if args.gif:
 
     frames = splitgif(args.gif)
 
-    newwidth = int(args.width) or  int(input("How wide do you want the ascii version of the gif to be: "))
+    newwidth = int(args.width) if args.width else os.get_terminal_size().columns
 
-    while True:
+    try:
+        print("\033[?25l")
+
+        asciiframes = []
+
         for frame in frames:
+            characters = []
             W,H = frame.size
 
             ratio = W/H / 3
@@ -140,8 +146,22 @@ if args.gif:
             else:
                 characters = blackandwhiteimg(pixels, charset)
 
-            print(formatchars(characters, newwidth))
-            time.sleep(0.1)
+            asciiframes.append(formatchars(characters, newwidth))
+
+        while True:
+            for frame in asciiframes:
+                print('\033[H', end='')
+                start = time.time()
+
+                print(frame)
+                elapsed = time.time() - start
+
+                sleepdur = 1 / int(args.frames) if args.frames else max(0, 0.05 - elapsed)
+                time.sleep(sleepdur)
+
+    except KeyboardInterrupt:
+        print("\033[?25h", end="")
+        subprocess.run(["clear"])
 
 
 else:
@@ -161,7 +181,7 @@ else:
     ratio = H/W / 3
 
     print(f"the ratio of height to width is {ratio},")
-    newwidth = int(args.width) or  int(input("How wide do you want the ascii version of the image to be: "))
+    newwidth = int(args.width) if args.width else os.get_terminal_size().columns
 
     newheight = math.floor(newwidth * ratio)
 
@@ -183,6 +203,3 @@ else:
 
     if args.save or args.output:
         saveascii(formatchars(characters, newwidth))
-
-# future plans : gif support, background removal, custom charsets
-# highlight mode? highlighting specific colours in the img
